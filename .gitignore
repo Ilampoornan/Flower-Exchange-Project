@@ -1,0 +1,18 @@
+# Ignore object files
+*.o
+
+# Ignore executables (optional, if you build them in the project root)
+*.out
+*.exe
+*.a
+*.so
+*.dll
+
+# macOS system files
+.DS_Store
+
+# Editor/IDE folders (optional, for VSCode/Xcode/CLion)
+.vscode/
+.idea/
+*.user
+*.swp
