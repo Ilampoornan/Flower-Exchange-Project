@@ -1,12 +1,15 @@
 #include "Exchange.h"
 
 #include <chrono>
+#include <cctype>
 #include <fstream>
 #include <iomanip>
+#include <map>
 #include <sstream>
 
 bool Exchange::IsHeader(const std::string& line) {
-    return line.find("ClientOrderID") != std::string::npos;
+    return line.find("ClientOrderID") != std::string::npos ||
+           line.find("Client Order ID") != std::string::npos;
 }
 
 std::vector<std::string> Exchange::SplitCsvLine(const std::string& line) {
@@ -113,9 +116,31 @@ std::vector<ExecutionReport> Exchange::ProcessOrdersFromFile(const std::string& 
         return reports;
     }
 
+    auto normalizeHeader = [](const std::string& text) {
+        std::string out;
+        out.reserve(text.size());
+        for (char ch : text) {
+            if (ch == ' ' || ch == '_') {
+                continue;
+            }
+            out.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(ch))));
+        }
+        return out;
+    };
+
+    std::map<std::string, int> columnIndex;
     std::string line;
     while (std::getline(inputFile, line)) {
-        if (line.empty() || IsHeader(line)) {
+        if (line.empty()) {
+            continue;
+        }
+
+        if (IsHeader(line)) {
+            columnIndex.clear();
+            const std::vector<std::string> headerFields = SplitCsvLine(line);
+            for (int i = 0; i < static_cast<int>(headerFields.size()); ++i) {
+                columnIndex[normalizeHeader(headerFields[i])] = i;
+            }
             continue;
         }
 
@@ -136,11 +161,21 @@ std::vector<ExecutionReport> Exchange::ProcessOrdersFromFile(const std::string& 
 
         Order order;
         order.OrderID = GenerateExchangeOrderId();
-        order.ClientOrderID = fields[0];
-        order.Instrument = fields[1];
+
+        auto getColumn = [&](const std::string& normalizedName, int fallbackIndex) {
+            const auto it = columnIndex.find(normalizedName);
+            const int index =
+                (it != columnIndex.end() && it->second >= 0 && it->second < static_cast<int>(fields.size()))
+                    ? it->second
+                    : fallbackIndex;
+            return fields[index];
+        };
+
+        order.ClientOrderID = getColumn("clientorderid", 0);
+        order.Instrument = getColumn("instrument", 1);
 
         Side parsedSide = Side::Buy;
-        if (!TryParseSide(fields[2], parsedSide)) {
+        if (!TryParseSide(getColumn("side", 2), parsedSide)) {
             order.Side = Side::Buy;
             order.Price = 0.0;
             order.Quantity = 0;
@@ -152,8 +187,8 @@ std::vector<ExecutionReport> Exchange::ProcessOrdersFromFile(const std::string& 
         order.Side = parsedSide;
 
         try {
-            order.Price = std::stod(fields[3]);
-            order.Quantity = std::stoi(fields[4]);
+            order.Price = std::stod(getColumn("price", 3));
+            order.Quantity = std::stoi(getColumn("quantity", 4));
         } catch (...) {
             order.Price = 0.0;
             order.Quantity = 0;
