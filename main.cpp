@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -5,7 +6,20 @@
 
 int main(int argc, char* argv[]) {
     const std::string inputFilePath = argc > 1 ? argv[1] : "orders.csv";
-    const std::string outputFilePath = argc > 2 ? argv[2] : "executions.csv";
+    const std::string outputFilePath =
+        argc > 2 ? argv[2] : "output_csvs/executions.csv";
+
+    const std::filesystem::path outputPath(outputFilePath);
+    const std::filesystem::path outputDir = outputPath.parent_path();
+    if (!outputDir.empty()) {
+        std::error_code ec;
+        std::filesystem::create_directories(outputDir, ec);
+        if (ec) {
+            std::cerr << "Failed to create output directory: " << outputDir
+                      << " (" << ec.message() << ")" << std::endl;
+            return 1;
+        }
+    }
 
     Exchange exchange;
     const std::vector<ExecutionReport> reports = exchange.ProcessOrdersFromFile(inputFilePath);
