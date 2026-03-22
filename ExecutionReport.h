@@ -12,8 +12,9 @@ public:
     Side Side;
     double Price;
     int Quantity;
-    double ExecutedPrice;
-    int ExecutedQuantity;
+    std::string Status;
+    std::string Reason;
+    std::string TransactionTime;
 };
 
 #endif
