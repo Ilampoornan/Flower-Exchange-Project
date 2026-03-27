@@ -1,0 +1,6 @@
+OrderID,ClientOrderID,Instrument,Side,Price,Quantity,Status,Reason,TransactionTime
+EX1,aa13,,1,55.0,100,Reject,Invalid instrument,20260327-19:03:16.608
+EX2,aa14,Rose,1,0.0,0,Reject,Invalid side,20260327-19:03:16.609
+EX3,aa15,Lavender,2,1.0,101,Reject,Invalid quantity,20260327-19:03:16.609
+EX4,aa16,Tulip,1,-1.0,100,Reject,Invalid price,20260327-19:03:16.609
+EX5,aa17,Orchid,1,-1.0,1000,Reject,Invalid price,20260327-19:03:16.609

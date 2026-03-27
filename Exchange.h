@@ -2,6 +2,7 @@
 #define EXCHANGE_H
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -20,6 +21,8 @@ public:
     ) const;
 
 private:
+    static const std::set<std::string> validInstruments;
+
     long long nextOrderSequence = 1;
     long long nextExchangeOrderId = 1;
 

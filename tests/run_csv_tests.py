@@ -117,7 +117,6 @@ def build_binary() -> Tuple[bool, str]:
         "OrderBook.cpp",
         "OrderBookSide.cpp",
         "Order.cpp",
-        "Orders.cpp",
         "-o",
         str(BINARY.name),
     ]

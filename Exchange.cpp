@@ -1,11 +1,16 @@
 #include "Exchange.h"
 
 #include <chrono>
+#include <set>
 #include <cctype>
 #include <fstream>
 #include <iomanip>
 #include <map>
 #include <sstream>
+
+const std::set<std::string> Exchange::validInstruments = {
+    "Rose", "Lavender", "Lotus", "Tulip", "Orchid"
+};
 
 bool Exchange::IsHeader(const std::string& line) {
     return line.find("ClientOrderID") != std::string::npos ||
@@ -43,7 +48,7 @@ bool Exchange::ValidateOrder(const Order& order, std::string& reason) const {
         reason = "Invalid ClientOrderID";
         return false;
     }
-    if (order.Instrument.empty()) {
+    if (validInstruments.find(order.Instrument) == validInstruments.end()) {
         reason = "Invalid instrument";
         return false;
     }
@@ -51,7 +56,7 @@ bool Exchange::ValidateOrder(const Order& order, std::string& reason) const {
         reason = "Invalid price";
         return false;
     }
-    if (order.Quantity <= 0) {
+    if (order.Quantity % 10 != 0 || order.Quantity < 10 || order.Quantity > 1000) {
         reason = "Invalid quantity";
         return false;
     }

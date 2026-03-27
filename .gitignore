@@ -1,12 +1,18 @@
 # Ignore object files
 *.o
 
-# Ignore executables (optional, if you build them in the project root)
+# Ignore executables
 *.out
 *.exe
 *.a
 *.so
 *.dll
+flower_exchange
+
+# Generated output files
+executions.csv
+output_csvs/executions.csv
+output_csvs/actual_test_runs/
 
 # macOS system files
 .DS_Store
