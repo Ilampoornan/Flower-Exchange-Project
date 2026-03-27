@@ -1,7 +1,7 @@
 CXX      = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 TARGET   = flower_exchange
-SRCS     = main.cpp Exchange.cpp OrderBook.cpp OrderBookSide.cpp Order.cpp
+SRCS     = src/main.cpp src/Exchange.cpp src/OrderBook.cpp src/OrderBookSide.cpp src/Order.cpp
 
 all: $(TARGET)
 
