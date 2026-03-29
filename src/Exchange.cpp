@@ -57,7 +57,7 @@ bool Exchange::ValidateOrder(const Order& order, std::string& reason) const {
         return false;
     }
     if (order.Quantity % 10 != 0 || order.Quantity < 10 || order.Quantity > 1000) {
-        reason = "Invalid quantity";
+        reason = "Invalid size";
         return false;
     }
     reason.clear();
@@ -66,7 +66,7 @@ bool Exchange::ValidateOrder(const Order& order, std::string& reason) const {
 
 std::string Exchange::GenerateExchangeOrderId() {
     std::ostringstream oss;
-    oss << "EX" << nextExchangeOrderId++;
+    oss << "ord" << nextExchangeOrderId++;
     return oss.str();
 }
 
@@ -86,7 +86,7 @@ std::string Exchange::BuildTimestamp() const {
                     % 1000;
 
     std::ostringstream oss;
-    oss << std::put_time(&tmLocal, "%Y%m%d-%H:%M:%S") << "." << std::setw(3)
+    oss << std::put_time(&tmLocal, "%Y%m%d-%H%M%S") << "." << std::setw(3)
         << std::setfill('0') << ms.count();
     return oss.str();
 }
@@ -224,16 +224,16 @@ void Exchange::WriteReportsToFile(
     const std::string& outputFilePath
 ) const {
     std::ofstream outputFile(outputFilePath);
-    outputFile << "OrderID,ClientOrderID,Instrument,Side,Price,Quantity,Status,Reason,TransactionTime\n";
+    outputFile << "Order ID,Client Order ID,Instrument,Side,Exec Status,Quantity,Price,Reason,Transaction Time\n";
 
     for (const ExecutionReport& report : reports) {
         outputFile << report.OrderID << ","
                    << report.ClientOrderID << ","
                    << report.Instrument << ","
                    << SideToCsv(report.Side) << ","
-                   << std::fixed << std::setprecision(1) << report.Price << ","
-                   << report.Quantity << ","
                    << report.Status << ","
+                   << report.Quantity << ","
+                   << std::fixed << std::setprecision(2) << report.Price << ","
                    << report.Reason << ","
                    << report.TransactionTime << "\n";
     }

@@ -24,6 +24,8 @@ private:
     ExecutionReport BuildReport(
         const Order& order,
         const std::string& status,
+        int quantity,
+        double execPrice,
         const std::string& reason = ""
     ) const;
 };

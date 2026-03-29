@@ -1,4 +1,0 @@
-ClientOrderID,Instrument,Side,Price,Quantity
-ord1,Rose,1,10.0,100
-ord2,Rose,2,12.0,50
-ord3,Rose,1,12.0,50

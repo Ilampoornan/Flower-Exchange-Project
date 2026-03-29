@@ -4,6 +4,11 @@ OrderBookSide::OrderBookSide(bool isBuySide)
     : isBuySide(isBuySide) {}
 
 void OrderBookSide::InsertOrder(const Order& ord) {
+    /*
+      Best Buy- highest price first 
+      Best Sell- lowest price first 
+    When two orders share the same price the one that arrived earlier gets priority 
+    */
     auto goesBefore = [this](const Order& lhs, const Order& rhs) {
         if (lhs.Price != rhs.Price) {
             if (isBuySide) {

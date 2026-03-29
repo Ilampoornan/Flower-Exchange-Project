@@ -23,7 +23,7 @@ std::string OrderBook::BuildTimestamp() const {
                     % 1000;
 
     std::ostringstream oss;
-    oss << std::put_time(&tmLocal, "%Y%m%d-%H:%M:%S") << "." << std::setw(3)
+    oss << std::put_time(&tmLocal, "%Y%m%d-%H%M%S") << "." << std::setw(3)
         << std::setfill('0') << ms.count();
     return oss.str();
 }
@@ -31,6 +31,8 @@ std::string OrderBook::BuildTimestamp() const {
 ExecutionReport OrderBook::BuildReport(
     const Order& order,
     const std::string& status,
+    int quantity,
+    double execPrice,
     const std::string& reason
 ) const {
     ExecutionReport report;
@@ -38,8 +40,8 @@ ExecutionReport OrderBook::BuildReport(
     report.ClientOrderID = order.ClientOrderID;
     report.Instrument = order.Instrument;
     report.Side = order.Side;
-    report.Price = order.Price;
-    report.Quantity = order.OriginalQuantity;
+    report.Price = execPrice;
+    report.Quantity = quantity;
     report.Status = status;
     report.Reason = reason;
     report.TransactionTime = BuildTimestamp();
@@ -51,22 +53,28 @@ std::vector<ExecutionReport> OrderBook::ProcessOrder(const Order& incomingOrder)
     Order incoming = incomingOrder;
 
     if (incoming.Side == Side::Buy) {
+        // Keep matching against the best (cheapest) sell order as long as the buyer is willing to pay at least that price.
         while (incoming.Quantity > 0 && !sellOrders.Empty()) {
             Order& resting = sellOrders.Top();
             if (incoming.Price < resting.Price) {
+                // The best available sell price is too high i.e no more matches possible.
                 break;
             }
 
+            // Trade the smaller of the two quantities.
             const int tradedQty = (incoming.Quantity < resting.Quantity)
                                       ? incoming.Quantity
                                       : resting.Quantity;
+
+            const double execPrice = resting.Price;
             incoming.Quantity -= tradedQty;
             resting.Quantity -= tradedQty;
 
+            // Fill = fully traded this side, PFill = still has quantity left after this match.
             reports.push_back(
-                BuildReport(incoming, incoming.Quantity == 0 ? "Fill" : "PFill"));
+                BuildReport(incoming, incoming.Quantity == 0 ? "Fill" : "PFill", tradedQty, execPrice));
             reports.push_back(
-                BuildReport(resting, resting.Quantity == 0 ? "Fill" : "PFill"));
+                BuildReport(resting, resting.Quantity == 0 ? "Fill" : "PFill", tradedQty, execPrice));
 
             if (resting.Quantity == 0) {
                 sellOrders.PopTop();
@@ -75,30 +83,30 @@ std::vector<ExecutionReport> OrderBook::ProcessOrder(const Order& incomingOrder)
 
         if (incoming.Quantity > 0) {
             if (incoming.Quantity == incoming.OriginalQuantity) {
-                reports.push_back(BuildReport(incoming, "New"));
-            } else {
-                reports.push_back(BuildReport(incoming, "PFill"));
-                reports.push_back(BuildReport(incoming, "New"));
+                reports.push_back(BuildReport(incoming, "New", incoming.OriginalQuantity, incoming.Price));
             }
             buyOrders.InsertOrder(incoming);
         }
     } else {
+        //  match against the best (highest) buy order.
         while (incoming.Quantity > 0 && !buyOrders.Empty()) {
             Order& resting = buyOrders.Top();
             if (incoming.Price > resting.Price) {
+                // The best available buy price is too low i.e no more matches possible.
                 break;
             }
 
             const int tradedQty = (incoming.Quantity < resting.Quantity)
                                       ? incoming.Quantity
                                       : resting.Quantity;
+            const double execPrice = resting.Price;
             incoming.Quantity -= tradedQty;
             resting.Quantity -= tradedQty;
 
             reports.push_back(
-                BuildReport(incoming, incoming.Quantity == 0 ? "Fill" : "PFill"));
+                BuildReport(incoming, incoming.Quantity == 0 ? "Fill" : "PFill", tradedQty, execPrice));
             reports.push_back(
-                BuildReport(resting, resting.Quantity == 0 ? "Fill" : "PFill"));
+                BuildReport(resting, resting.Quantity == 0 ? "Fill" : "PFill", tradedQty, execPrice));
 
             if (resting.Quantity == 0) {
                 buyOrders.PopTop();
@@ -107,10 +115,7 @@ std::vector<ExecutionReport> OrderBook::ProcessOrder(const Order& incomingOrder)
 
         if (incoming.Quantity > 0) {
             if (incoming.Quantity == incoming.OriginalQuantity) {
-                reports.push_back(BuildReport(incoming, "New"));
-            } else {
-                reports.push_back(BuildReport(incoming, "PFill"));
-                reports.push_back(BuildReport(incoming, "New"));
+                reports.push_back(BuildReport(incoming, "New", incoming.OriginalQuantity, incoming.Price));
             }
             sellOrders.InsertOrder(incoming);
         }

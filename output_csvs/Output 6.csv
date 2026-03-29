@@ -1,11 +1,9 @@
-OrderID,ClientOrderID,Instrument,Side,Price,Quantity,Status,Reason,TransactionTime
-EX1,aa13,Rose,1,55.0,100,New,,20260327-19:03:16.605
-EX2,aa14,Rose,1,65.0,100,New,,20260327-19:03:16.605
-EX3,aa15,Rose,2,1.0,300,PFill,,20260327-19:03:16.605
-EX2,aa14,Rose,1,65.0,100,Fill,,20260327-19:03:16.605
-EX3,aa15,Rose,2,1.0,300,PFill,,20260327-19:03:16.605
-EX1,aa13,Rose,1,55.0,100,Fill,,20260327-19:03:16.605
-EX3,aa15,Rose,2,1.0,300,PFill,,20260327-19:03:16.605
-EX3,aa15,Rose,2,1.0,300,New,,20260327-19:03:16.605
-EX4,aa16,Rose,1,2.0,100,Fill,,20260327-19:03:16.605
-EX3,aa15,Rose,2,1.0,300,Fill,,20260327-19:03:16.605
+Order ID,Client Order ID,Instrument,Side,Exec Status,Quantity,Price,Reason
+ord1,aa13,Rose,1,New,100,55.00,
+ord2,aa14,Rose,1,New,100,65.00,
+ord3,aa15,Rose,2,PFill,100,65.00,
+ord2,aa14,Rose,1,Fill,100,65.00,
+ord3,aa15,Rose,2,PFill,100,55.00,
+ord1,aa13,Rose,1,Fill,100,55.00,
+ord4,aa16,Rose,1,Fill,100,1.00,
+ord3,aa15,Rose,2,Fill,100,1.00,
